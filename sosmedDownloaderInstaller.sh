@@ -10,13 +10,16 @@ apt update && apt upgrade -y
 apt install python3 python3-pip git unzip -y
 
 # Clone repositori
-git clone https://github.com/username/sosmedDownloader.git
+git clone https://github.com/mrpinguiiin/sosmedDownloader.git
 
 # Masuk ke direktori repositori
 cd sosmedDownloader
 
 # Install dependensi Python
 pip3 install -r requirements.txt
+
+# Install yt-dlp
+pip3 install yt-dlp
 
 # Konfigurasi variabel
 echo ""

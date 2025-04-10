@@ -1,6 +1,6 @@
 import os
 import telebot
-from youtube_dl import YoutubeDL
+from yt_dlp import YoutubeDL
 
 # Baca variabel dari file var.txt
 with open('/root/sosmedDownloader/var.txt') as f:
@@ -18,17 +18,37 @@ def send_welcome(message):
 @bot.message_handler(func=lambda message: True)
 def download_video(message):
     url = message.text
+    
+    # Validasi URL sederhana
+    if not url.startswith(('http://', 'https://')):
+        bot.send_message(message.chat.id, "Format URL tidak valid. Pastikan URL diawali dengan http:// atau https://")
+        return
+        
     try:
-        with YoutubeDL() as ydl:
-            info_dict = ydl.extract_info(url, download=False)
-            video_url = info_dict.get('url', None) or info_dict.get('webpage_url', None)
-            if video_url:
-                bot.send_message(message.chat.id, "Sedang mendownload...")
-                ydl.download([url])
+        ydl_opts = {
+            'format': 'best',
+            'outtmpl': '%(title)s.%(ext)s',
+            'quiet': True
+        }
+        
+        with YoutubeDL(ydl_opts) as ydl:
+            bot.send_message(message.chat.id, "Sedang mendownload...")
+            info_dict = ydl.extract_info(url, download=True)
+            
+            # Cari file yang baru saja di-download
+            filename = f"{info_dict['title']}.mp4"
+            if not os.path.exists(filename):
+                # Jika tidak ada .mp4, coba format lain
+                filename = ydl.prepare_filename(info_dict)
+                
+            if os.path.exists(filename):
+                with open(filename, 'rb') as video:
+                    bot.send_video(message.chat.id, video)
+                os.remove(filename)  # Hapus file setelah dikirim
                 bot.send_message(message.chat.id, "Download selesai!")
-                bot.send_video(message.chat.id, open(info_dict['title'] + '.mp4', 'rb'))
             else:
-                bot.send_message(message.chat.id, "Link tidak valid atau tidak didukung.")
+                bot.send_message(message.chat.id, "Gagal menemukan file hasil download.")
+                
     except Exception as e:
         bot.send_message(message.chat.id, f"Terjadi kesalahan: {str(e)}")
 
