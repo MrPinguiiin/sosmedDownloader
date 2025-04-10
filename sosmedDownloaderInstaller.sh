@@ -7,7 +7,7 @@ rm -f sosmedDownloaderInstaller.sh
 apt update && apt upgrade -y
 
 # Install dependensi
-apt install python3 python3-pip git unzip -y
+apt install python3 python3-pip git unzip ffmpeg -y
 
 # Clone repositori
 git clone https://github.com/mrpinguiiin/sosmedDownloader.git
@@ -24,7 +24,7 @@ pip3 install yt-dlp
 # Konfigurasi variabel
 echo ""
 read -e -p "[*] Input your Bot Token : " bottoken
-read -e -p "[*] Input Your Id Telegram : " admin
+read -e -p "[*] Input Your ADMIN Id Telegram : " admin
 read -e -p "[*] Input Your Subdomain : " domain
 
 echo -e "BOT_TOKEN='$bottoken'" > var.txt

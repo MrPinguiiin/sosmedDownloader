@@ -36,6 +36,80 @@ chmod +x sosmedDownloaderInstaller.sh
 - Download audio saja
 - Antarmuka interaktif
 
+## Fitur Baru
+
+### Batch Download
+- Kirim command `/batch`
+- Paste semua link video (1 link per baris)
+- Bot akan memproses semua link secara berurutan
+- Mendukung hingga 10 link sekaligus
+
+Contoh penggunaan:
+```
+/batch
+https://tiktok.com/...
+https://youtube.com/...
+https://instagram.com/...
+```
+
+### TikTok Watermark Removal
+- Pilih platform 'TikTok'
+- Pilih opsi 'Tanpa Watermark'
+- Kirim link video TikTok
+- Bot akan mengirimkan video tanpa watermark
+
+Note: Fitur ini mungkin tidak bekerja untuk semua video TikTok tergantung kebijakan platform
+
+### Format Conversion
+- Pilih opsi 'MP3' untuk mengkonversi ke audio
+- Pilih opsi 'GIF' untuk mengkonversi ke animasi GIF (10 detik pertama)
+- Hasil konversi akan dikirim sekaligus file aslinya
+
+Note: Pastikan server memiliki FFmpeg terinstall
+
+### Metadata Preservation
+- Bot akan menyimpan:
+  - Judul video asli
+  - Deskripsi video
+  - Thumbnail/cover
+  - Informasi uploader
+- Metadata bisa dilihat di properti file hasil download
+
+Note: Fitur ini bekerja untuk format MP4 dan MP3
+
+### Google Drive Integration
+1. Buat project di Google Cloud Console
+2. Aktifkan Google Drive API
+3. Download credentials.json dan simpan di folder bot
+4. Saat pertama kali run, bot akan meminta autentikasi
+5. File hasil download akan otomatis diupload ke Google Drive
+
+Note: Diperlukan akses internet untuk upload ke Google Drive
+
+### User Quota System
+- Setiap user mendapat 10 download per hari
+- Cek quota dengan command `/quota`
+- Quota reset setiap 24 jam
+
+Untuk admin:
+- Ubah `MAX_DAILY_DOWNLOADS` di bot.py untuk adjust quota
+
+### Admin Dashboard (Updated)
+Fitur baru:
+- 🚫 Ban User - Blokir user tertentu
+- ✅ Unban User - Hapus blokir user
+- 📊 Stats - Total downloads harian
+
+Cara pakai:
+1. Kirim `/admin`
+2. Pilih '🔧 Settings'
+3. Pilih aksi yang diinginkan
+
+### Auto Delete System
+- File akan otomatis terhapus 30 menit setelah download
+- Untuk adjust waktu, ubah `AUTO_DELETE_MINUTES` di bot.py
+- Sistem berjalan di background tanpa mengganggu proses utama
+
 ## Requirements
 - Python 3
 - pip
