@@ -1,0 +1,70 @@
+#!/bin/bash
+
+# Hapus skrip jika sudah ada
+rm -f sosmedDownloaderInstaller.sh
+
+# Update dan upgrade sistem
+apt update && apt upgrade -y
+
+# Install dependensi
+apt install python3 python3-pip git unzip -y
+
+# Clone repositori
+git clone https://github.com/username/sosmedDownloader.git
+
+# Masuk ke direktori repositori
+cd sosmedDownloader
+
+# Install dependensi Python
+pip3 install -r requirements.txt
+
+# Konfigurasi variabel
+echo ""
+read -e -p "[*] Input your Bot Token : " bottoken
+read -e -p "[*] Input Your Id Telegram : " admin
+read -e -p "[*] Input Your Subdomain : " domain
+
+echo -e "BOT_TOKEN='$bottoken'" > var.txt
+echo -e "ADMIN='$admin'" >> var.txt
+echo -e "DOMAIN='$domain'" >> var.txt
+
+clear
+echo "Data Bot Anda:"
+echo -e "==============================="
+echo "Bot Token     : $bottoken"
+echo "Id Telegram   : $admin"
+echo "Subdomain     : $domain"
+echo -e "==============================="
+echo "Pengaturan selesai. Mohon tunggu 10 detik..."
+sleep 10
+
+# Buat file service systemd
+cat > /etc/systemd/system/sosmedDownloader.service << END
+[Unit]
+Description=SosmedDownloader - Bot Downloader
+After=network.target
+
+[Service]
+WorkingDirectory=/root/sosmedDownloader
+ExecStart=/usr/bin/python3 /root/sosmedDownloader/bot.py
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target
+END
+
+# Mulai dan aktifkan service
+systemctl daemon-reload
+systemctl start sosmedDownloader
+systemctl enable sosmedDownloader
+
+clear
+
+echo -e "==============================================="
+echo "Instalasi selesai, ketik /menu di bot Telegram Anda"
+echo -e "==============================================="
+read -n 1 -s -r -p "Tekan tombol apa saja untuk reboot"
+rm -f sosmedDownloaderInstaller.sh
+clear
+reboot
