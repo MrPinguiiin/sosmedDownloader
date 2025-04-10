@@ -1,17 +1,14 @@
 import os
 import telebot
-from yt_dlp import YoutubeDL
 from telebot import types
+import yt_dlp
+from PIL import Image
 import requests
-import time
-from mutagen.mp4 import MP4
-from mutagen.id3 import ID3, TIT2, TPE1, TALB, APIC
 from io import BytesIO
+import mutagen
+from mutagen.id3 import ID3, TIT2, TPE1, TALB, APIC
 import ffmpeg
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload
+import time
 from datetime import datetime, timedelta
 import threading
 
@@ -106,7 +103,7 @@ def remove_tiktok_watermark(url):
             'outtmpl': '%(title)s.%(ext)s',
             'quiet': True
         }
-        with YoutubeDL(ydl_opts) as ydl:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             return info['url']
     except Exception as e:
@@ -218,7 +215,7 @@ def download_video(message, link=None, is_batch=False, batch_progress=None):
         elif platform == 'Instagram':
             ydl_opts['extractor_args'] = {'instagram': {'format': 'download_url'}}
         
-        with YoutubeDL(ydl_opts) as ydl:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             if is_batch:
                 bot.send_message(message.chat.id, f"Sedang mendownload dari {platform} ({resolution}) - {batch_progress[0]}/{batch_progress[1]}...")
             else:
@@ -257,9 +254,9 @@ def download_video(message, link=None, is_batch=False, batch_progress=None):
                     bot.send_message(message.chat.id, "Download selesai!")
                 
                 # Upload ke Google Drive
-                gdrive_link = upload_to_gdrive(filename)
-                if gdrive_link:
-                    bot.send_message(message.chat.id, f"File berhasil diupload ke Google Drive: {gdrive_link}")
+                # gdrive_link = upload_to_gdrive(filename)
+                # if gdrive_link:
+                #     bot.send_message(message.chat.id, f"File berhasil diupload ke Google Drive: {gdrive_link}")
             else:
                 bot.send_message(message.chat.id, "Gagal menemukan file hasil download.")
         
@@ -274,7 +271,7 @@ def download_video(message, link=None, is_batch=False, batch_progress=None):
 def save_video_metadata(filename, info):
     try:
         if filename.endswith('.mp4'):
-            video = MP4(filename)
+            video = mutagen.mp4.MP4(filename)
             video['\xa9nam'] = info.get('title', '')
             video['\xa9alb'] = f"{info['extractor_key']} Video"
             video['\xa9ART'] = info.get('uploader', '')
@@ -285,7 +282,7 @@ def save_video_metadata(filename, info):
             if thumbnail_url:
                 response = requests.get(thumbnail_url)
                 if response.status_code == 200:
-                    video['covr'] = [MP4.CoverArt(data=response.content)]
+                    video['covr'] = [mutagen.mp4.MP4Cover(data=response.content)]
             
             video.save()
         elif filename.endswith('.mp3'):
@@ -339,31 +336,6 @@ def convert_to_gif(input_file, output_file, duration=10):
     except Exception as e:
         print(f"GIF Conversion Error: {str(e)}")
         return False
-
-# Google Drive Setup
-SCOPES = ['https://www.googleapis.com/auth/drive.file']
-
-def upload_to_gdrive(file_path):
-    try:
-        flow = InstalledAppFlow.from_client_secrets_file(
-            'credentials.json', SCOPES)
-        creds = flow.run_local_server(port=0)
-        
-        service = build('drive', 'v3', credentials=creds)
-        
-        file_metadata = {'name': os.path.basename(file_path)}
-        media = MediaFileUpload(file_path)
-        
-        file = service.files().create(
-            body=file_metadata,
-            media_body=media,
-            fields='id,webViewLink'
-        ).execute()
-        
-        return file.get('webViewLink')
-    except Exception as e:
-        print(f"Google Drive upload error: {str(e)}")
-        return None
 
 # Admin Command Handlers
 @bot.message_handler(commands=['admin'], func=lambda m: m.from_user.id in ADMIN_IDS)
