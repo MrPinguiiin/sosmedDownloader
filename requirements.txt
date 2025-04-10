@@ -2,10 +2,5 @@ pyTelegramBotAPI
 yt-dlp
 pillow
 mutagen
-pymongo
-python-dotenv
 ffmpeg-python
-google-api-python-client
-google-auth-httplib2
-google-auth-oauthlib
-threading
+requests
