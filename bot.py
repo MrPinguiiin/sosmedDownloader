@@ -14,7 +14,16 @@ import threading
 
 # Baca variabel dari file var.txt
 with open('var.txt') as f:
-    exec(f.read())
+    config = {}
+    for line in f:
+        line = line.strip()
+        if '=' in line:
+            key, value = line.split('=', 1)
+            config[key.strip()] = ast.literal_eval(value.strip())
+
+BOT_TOKEN = config.get('BOT_TOKEN', '')
+ADMIN = config.get('ADMIN', '')
+DOMAIN = config.get('DOMAIN', '')
 
 # Inisialisasi bot
 bot = telebot.TeleBot(BOT_TOKEN)
