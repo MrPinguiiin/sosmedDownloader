@@ -13,13 +13,24 @@ bot = telebot.TeleBot(BOT_TOKEN)
 # Fungsi untuk menangani pesan /start
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
+    welcome_msg = """
+🌟 *Selamat Datang di Sosmed Downloader Bot!* 🌟
+
+Saya bisa membantu Anda mendownload video dari:
+- TikTok
+- YouTube
+- Instagram
+
+Silakan pilih platform yang Anda inginkan:
+"""
+    
     markup = types.ReplyKeyboardMarkup(row_width=3)
     itembtn1 = types.KeyboardButton('TikTok')
     itembtn2 = types.KeyboardButton('YouTube')
     itembtn3 = types.KeyboardButton('Instagram')
     markup.add(itembtn1, itembtn2, itembtn3)
     
-    bot.reply_to(message, "Halo! Pilih platform yang ingin Anda download:", reply_markup=markup)
+    bot.reply_to(message, welcome_msg, parse_mode='Markdown', reply_markup=markup)
 
 # Variabel global untuk menyimpan pilihan platform
 user_choices = {}
