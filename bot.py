@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 import threading
 
 # Baca variabel dari file var.txt
-with open('/root/sosmedDownloader/var.txt') as f:
+with open('var.txt') as f:
     exec(f.read())
 
 # Inisialisasi bot
