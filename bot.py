@@ -73,26 +73,24 @@ def update_quota(user_id):
     user_quota[user_id]['count'] += 1
 
 # Fungsi untuk menangani pesan /start
+def show_main_menu(chat_id):
+    markup = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
+    markup.add('📥 Download', 'ℹ️ Bantuan', '📊 Quota')
+    bot.send_message(
+        chat_id=chat_id,
+        text="Pilih menu:",
+        reply_markup=markup,
+        parse_mode='Markdown',
+        disable_web_page_preview=True
+    )
+
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    welcome_msg = """
-🌟 *Selamat Datang di Sosmed Downloader Bot!* 🌟
-
-Saya bisa membantu Anda mendownload video dari:
-- TikTok
-- YouTube
-- Instagram
-
-Silakan pilih platform yang Anda inginkan:
-"""
-    
-    markup = types.ReplyKeyboardMarkup(row_width=3)
-    itembtn1 = types.KeyboardButton('TikTok')
-    itembtn2 = types.KeyboardButton('YouTube')
-    itembtn3 = types.KeyboardButton('Instagram')
-    markup.add(itembtn1, itembtn2, itembtn3)
-    
-    bot.reply_to(message, welcome_msg, parse_mode='Markdown', reply_markup=markup)
+    try:
+        bot.send_chat_action(message.chat.id, 'typing')
+        show_main_menu(message.chat.id)
+    except Exception as e:
+        print(f"Error di /start: {str(e)}")
 
 # Variabel global untuk menyimpan pilihan platform
 user_choices = {}
@@ -193,6 +191,7 @@ def download_video(message, link=None, is_batch=False, batch_progress=None):
                     bot.send_video(message.chat.id, video)
                 schedule_file_deletion(filename, AUTO_DELETE_MINUTES)
                 update_quota(message.chat.id)
+                show_main_menu(message.chat.id)
                 return
             else:
                 bot.send_message(message.chat.id, "Gagal menghapus watermark, mencoba download biasa...")
@@ -254,7 +253,8 @@ def download_video(message, link=None, is_batch=False, batch_progress=None):
                 if is_batch:
                     bot.send_message(message.chat.id, f"Download {batch_progress[0]}/{batch_progress[1]} selesai!")
                 else:
-                    bot.send_message(message.chat.id, "Download selesai!")
+                    bot.send_message(message.chat.id, "✅ Download selesai!")
+                show_main_menu(message.chat.id)
                 
                 # Upload ke Google Drive
                 # gdrive_link = upload_to_gdrive(filename)
@@ -262,6 +262,7 @@ def download_video(message, link=None, is_batch=False, batch_progress=None):
                 #     bot.send_message(message.chat.id, f"File berhasil diupload ke Google Drive: {gdrive_link}")
             else:
                 bot.send_message(message.chat.id, "Gagal menemukan file hasil download.")
+                show_main_menu(message.chat.id)
         
         # Reset pilihan user setelah selesai
         if not is_batch:
@@ -269,6 +270,7 @@ def download_video(message, link=None, is_batch=False, batch_progress=None):
                 
     except Exception as e:
         bot.send_message(message.chat.id, f"Terjadi kesalahan: {str(e)}")
+        show_main_menu(message.chat.id)
 
 # Fungsi untuk menyimpan metadata video
 def save_video_metadata(filename, info):
@@ -382,6 +384,7 @@ def process_batch_links(message):
             bot.reply_to(message, f"Gagal memproses link {i}: {str(e)}")
     
     bot.reply_to(message, "Proses batch download selesai!")
+    show_main_menu(message.chat.id)
 
 @bot.message_handler(commands=['quota'])
 def show_quota(message):
