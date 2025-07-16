@@ -1,3 +1,3 @@
-echo "BOT_TOKEN='7509073136:AAEE2wqOi6sWRVtgdVT8tzcIdJFNVdAYilk'" > var.txt
-echo "ADMIN='1068939001'" >> var.txt
-echo "DOMAIN='server.badcode.biz.id'" >> var.txt
+echo "BOT_TOKEN='{yourToken here}'" > var.txt
+echo "ADMIN='{YourId Tele here'" >> var.txt
+echo "DOMAIN='{YourDomain here}'" >> var.txt
