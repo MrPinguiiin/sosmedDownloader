@@ -143,6 +143,39 @@ def handle_quota_menu(message):
 def handle_back(message):
     show_main_menu(message.chat.id)
 
+# Fungsi download via Cobalt API (untuk TikTok & Instagram)
+def download_via_cobalt(url, audio_only=False):
+    try:
+        api_url = "https://api.cobalt.tools/api/json"
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "url": url,
+            "isAudioOnly": audio_only,
+            "filenamePattern": "basic"
+        }
+        
+        response = requests.post(api_url, json=payload, headers=headers, timeout=30)
+        data = response.json()
+        
+        if data.get("status") == "stream" or data.get("status") == "redirect":
+            video_url = data.get("url")
+            if video_url:
+                # Download file
+                filename = f"{int(time.time())}.{'mp3' if audio_only else 'mp4'}"
+                with requests.get(video_url, stream=True, timeout=60) as r:
+                    r.raise_for_status()
+                    with open(filename, 'wb') as f:
+                        for chunk in r.iter_content(chunk_size=8192):
+                            f.write(chunk)
+                return filename
+        return None
+    except Exception as e:
+        print(f"Cobalt API Error: {str(e)}")
+        return None
+
 # Fungsi untuk menghapus watermark TikTok
 def remove_tiktok_watermark(url):
     try:
@@ -259,7 +292,31 @@ def download_video(message, link=None, is_batch=False, batch_progress=None):
         else:  # Terbaik
             ydl_opts['format'] = 'best'
         
-        # Platform-specific options (tanpa cookies)
+        # Untuk TikTok dan Instagram, coba Cobalt API dulu
+        if platform in ['TikTok', 'Instagram']:
+            bot.send_message(message.chat.id, f"Sedang mendownload dari {platform}...")
+            audio_only = resolution in ['Audio Saja', 'MP3']
+            filename = download_via_cobalt(url, audio_only)
+            
+            if filename and os.path.exists(filename):
+                if audio_only:
+                    with open(filename, 'rb') as audio:
+                        bot.send_audio(message.chat.id, audio)
+                else:
+                    with open(filename, 'rb') as video:
+                        bot.send_video(message.chat.id, video)
+                
+                schedule_file_deletion(filename, AUTO_DELETE_MINUTES)
+                update_quota(message.chat.id)
+                bot.send_message(message.chat.id, "✅ Download selesai!")
+                show_main_menu(message.chat.id)
+                if not is_batch:
+                    del user_choices[message.chat.id]
+                return
+            else:
+                bot.send_message(message.chat.id, "⚠️ Cobalt gagal, mencoba yt-dlp...")
+        
+        # Fallback ke yt-dlp untuk YouTube atau jika Cobalt gagal
         if platform == 'TikTok':
             ydl_opts['extractor_args'] = {'tiktok': {'format': 'download_addr'}}
         
