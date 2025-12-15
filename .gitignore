@@ -1,0 +1,22 @@
+# Virtual environment
+venv/
+.venv/
+
+# Config dengan token
+var.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Downloaded files
+*.mp4
+*.mp3
+*.gif
+*.webm
+
+# IDE
+.idea/
+.vscode/
+*.swp
