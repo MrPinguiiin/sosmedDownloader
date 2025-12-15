@@ -95,6 +95,54 @@ def send_welcome(message):
 # Variabel global untuk menyimpan pilihan platform
 user_choices = {}
 
+# Handler untuk menu utama
+@bot.message_handler(func=lambda message: message.text == '📥 Download')
+def handle_download_menu(message):
+    markup = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
+    markup.add('TikTok', 'YouTube', 'Instagram')
+    markup.add('⬅️ Kembali')
+    bot.send_message(message.chat.id, "Pilih platform:", reply_markup=markup)
+
+@bot.message_handler(func=lambda message: message.text == 'ℹ️ Bantuan')
+def handle_help_menu(message):
+    help_text = """
+*Cara Menggunakan Bot:*
+
+1. Klik 📥 Download
+2. Pilih platform (TikTok/YouTube/Instagram)
+3. Pilih kualitas video
+4. Kirim link video
+
+*Commands:*
+/start - Menu utama
+/quota - Cek sisa quota
+/batch - Download banyak link sekaligus
+
+*Fitur:*
+- Download video berbagai resolusi
+- Konversi ke MP3/GIF
+- TikTok tanpa watermark
+- Batch download
+"""
+    bot.send_message(message.chat.id, help_text, parse_mode='Markdown')
+
+@bot.message_handler(func=lambda message: message.text == '📊 Quota')
+def handle_quota_menu(message):
+    user_id = message.from_user.id
+    if user_id not in user_quota:
+        check_quota(user_id)
+    
+    remaining = MAX_DAILY_DOWNLOADS - user_quota[user_id]['count']
+    reset_time = user_quota[user_id]['reset_time']
+    
+    bot.send_message(message.chat.id,
+                   f"📊 *Quota Anda*\n\nSisa: {remaining}/{MAX_DAILY_DOWNLOADS}\nReset: {reset_time.strftime('%Y-%m-%d %H:%M')}",
+                   parse_mode='Markdown')
+
+@bot.message_handler(func=lambda message: message.text == '⬅️ Kembali')
+def handle_back(message):
+    show_main_menu(message.chat.id)
+
 # Fungsi untuk menghapus watermark TikTok
 def remove_tiktok_watermark(url):
     try:

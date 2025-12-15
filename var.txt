@@ -1,3 +1,3 @@
-echo "BOT_TOKEN='{yourToken here}'" > var.txt
-echo "ADMIN='{YourId Tele here'" >> var.txt
-echo "DOMAIN='{YourDomain here}'" >> var.txt
+BOT_TOKEN='8059846921:AAGYhQGHDYCTVti-4azOX6WG2DVj3mIQEPA'
+ADMIN='1068939001'
+DOMAIN='domain_opsional'
