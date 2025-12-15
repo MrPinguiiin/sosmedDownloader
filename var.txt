@@ -1,3 +1,3 @@
-BOT_TOKEN='8059846921:AAGYhQGHDYCTVti-4azOX6WG2DVj3mIQEPA'
-ADMIN='1068939001'
+BOT_TOKEN='yourtokenhere'
+ADMIN='idtelehere'
 DOMAIN='domain_opsional'
