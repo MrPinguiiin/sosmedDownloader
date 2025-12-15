@@ -259,11 +259,9 @@ def download_video(message, link=None, is_batch=False, batch_progress=None):
         else:  # Terbaik
             ydl_opts['format'] = 'best'
         
-        # Platform-specific options
+        # Platform-specific options (tanpa cookies)
         if platform == 'TikTok':
             ydl_opts['extractor_args'] = {'tiktok': {'format': 'download_addr'}}
-        elif platform == 'Instagram':
-            ydl_opts['extractor_args'] = {'instagram': {'format': 'download_url'}}
         
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             if is_batch:
