@@ -35,6 +35,23 @@ banned_users = set()
 # Config Auto Delete
 AUTO_DELETE_MINUTES = 30  # Hapus file setelah 30 menit
 
+# Fungsi untuk generate thumbnail dari video
+def generate_thumbnail(video_path):
+    try:
+        thumb_path = video_path.rsplit('.', 1)[0] + '_thumb.jpg'
+        (
+            ffmpeg
+            .input(video_path, ss=1)
+            .filter('scale', 320, -1)
+            .output(thumb_path, vframes=1)
+            .run(overwrite_output=True, quiet=True)
+        )
+        if os.path.exists(thumb_path):
+            return thumb_path
+    except Exception as e:
+        print(f"Thumbnail generation error: {str(e)}")
+    return None
+
 def schedule_file_deletion(file_path, delay_minutes):
     def delete_file():
         try:
@@ -268,10 +285,20 @@ def download_video(message, link=None, is_batch=False, batch_progress=None):
                         for chunk in r.iter_content(chunk_size=8192):
                             f.write(chunk)
                 
+                # Generate thumbnail
+                thumb_path = generate_thumbnail(filename)
+                
                 with open(filename, 'rb') as video:
-                    bot.send_video(message.chat.id, video)
+                    if thumb_path and os.path.exists(thumb_path):
+                        with open(thumb_path, 'rb') as thumb:
+                            bot.send_video(message.chat.id, video, thumb=thumb, supports_streaming=True)
+                        schedule_file_deletion(thumb_path, AUTO_DELETE_MINUTES)
+                    else:
+                        bot.send_video(message.chat.id, video, supports_streaming=True)
+                
                 schedule_file_deletion(filename, AUTO_DELETE_MINUTES)
                 update_quota(message.chat.id)
+                bot.send_message(message.chat.id, "✅ Download selesai!")
                 show_main_menu(message.chat.id)
                 return
             else:
@@ -303,8 +330,15 @@ def download_video(message, link=None, is_batch=False, batch_progress=None):
                     with open(filename, 'rb') as audio:
                         bot.send_audio(message.chat.id, audio)
                 else:
+                    # Generate thumbnail
+                    thumb_path = generate_thumbnail(filename)
                     with open(filename, 'rb') as video:
-                        bot.send_video(message.chat.id, video)
+                        if thumb_path and os.path.exists(thumb_path):
+                            with open(thumb_path, 'rb') as thumb:
+                                bot.send_video(message.chat.id, video, thumb=thumb, supports_streaming=True)
+                            schedule_file_deletion(thumb_path, AUTO_DELETE_MINUTES)
+                        else:
+                            bot.send_video(message.chat.id, video, supports_streaming=True)
                 
                 schedule_file_deletion(filename, AUTO_DELETE_MINUTES)
                 update_quota(message.chat.id)
