@@ -21,8 +21,29 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
           script: |
+            # Clone jika belum ada
+            if [ ! -d "$HOME/sosmedDownloader" ]; then
+              cd ~
+              git clone https://github.com/MrPinguiiin/sosmedDownloader.git
+            fi
+            
             cd ~/sosmedDownloader
             git pull origin main
-            source venv/bin/activate
-            pip install -r requirements.txt
+            
+            # Buat venv jika belum ada
+            if [ ! -d "venv" ]; then
+              python3 -m venv venv
+            fi
+            
+            # Install dependencies
+            venv/bin/pip install -r requirements.txt
+            
+            # Setup service jika belum ada
+            if [ ! -f "/etc/systemd/system/sosmed-bot.service" ]; then
+              sudo cp sosmed-bot.service /etc/systemd/system/
+              sudo systemctl daemon-reload
+              sudo systemctl enable sosmed-bot
+            fi
+            
+            # Restart bot
             sudo systemctl restart sosmed-bot
